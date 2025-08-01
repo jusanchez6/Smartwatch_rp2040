@@ -33,6 +33,8 @@ project(SmartWatch C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+
+
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(SmartWatch 
@@ -40,6 +42,8 @@ add_executable(SmartWatch
             lib/imu/I2C_dev.cpp
             lib/imu/QMI8658A.cpp
             lib/rtc/dev_rtc.cpp
+            lib/display/spi_lcd.c
+            lib/display/lcd.cpp
 )
 
 pico_set_program_name(SmartWatch "SmartWatch")
@@ -57,15 +61,27 @@ target_link_libraries(SmartWatch
 # Add the standard include files to the build
 target_include_directories(SmartWatch PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl/src
         ${CMAKE_CURRENT_LIST_DIR}/lib/imu/include
         ${CMAKE_CURRENT_LIST_DIR}/lib/rtc/include
+        ${CMAKE_CURRENT_LIST_DIR}/lib/display/include
 )
 
+set(LVGL_DIR ${CMAKE_CURRENT_LIST_DIR}/lvgl)
+file(GLOB_RECURSE LVGL_SOURCES ${LVGL_DIR}/src/*.c)
+
+
+add_library(lvgl STATIC ${LVGL_SOURCES}
+)
 # Add any user requested libraries
-target_link_libraries(SmartWatch 
+target_link_libraries(SmartWatch
+        hardware_gpio
+        hardware_pwm
         hardware_spi
         hardware_i2c
         hardware_dma
+        lvgl
         )
 
 pico_add_extra_outputs(SmartWatch)
