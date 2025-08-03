@@ -1,5 +1,6 @@
 
-#include "spi_lcd.h"
+#include "dev_spi.h"
+
 
 dma_channel_config c;
 uint dma_tx;

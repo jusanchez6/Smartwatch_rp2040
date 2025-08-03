@@ -28,7 +28,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(SmartWatch C CXX ASM)
+project(main C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -37,45 +37,56 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(SmartWatch 
-            SmartWatch.cpp 
-            lib/imu/I2C_dev.cpp
-            lib/imu/QMI8658A.cpp
-            lib/rtc/dev_rtc.cpp
-            lib/display/spi_lcd.c
-            lib/display/lcd.cpp
+add_executable(main 
+            main.c
+            HAL/rp2040_err/rp2040_err.c
+            HAL/dev_i2c/dev_i2c.c
+            HAL/dev_spi/dev_spi.c
+            lib/imu/imu.c 
+            lib/display/LCD.c 
+            lib/rtc/rtc.c
+            lib/smartwatch.c
 )
 
-pico_set_program_name(SmartWatch "SmartWatch")
-pico_set_program_version(SmartWatch "0.1")
+pico_set_program_name(main "main")
+pico_set_program_version(main "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(SmartWatch 0)
-pico_enable_stdio_usb(SmartWatch 1)
+pico_enable_stdio_uart(main 0)
+pico_enable_stdio_usb(main 1)
 
 # Add the standard library to the build
-target_link_libraries(SmartWatch
+target_link_libraries(main
         pico_stdlib
         hardware_rtc)
-
-# Add the standard include files to the build
-target_include_directories(SmartWatch PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/lvgl
-        ${CMAKE_CURRENT_LIST_DIR}/lvgl/src
-        ${CMAKE_CURRENT_LIST_DIR}/lib/imu/include
-        ${CMAKE_CURRENT_LIST_DIR}/lib/rtc/include
-        ${CMAKE_CURRENT_LIST_DIR}/lib/display/include
-)
 
 set(LVGL_DIR ${CMAKE_CURRENT_LIST_DIR}/lvgl)
 file(GLOB_RECURSE LVGL_SOURCES ${LVGL_DIR}/src/*.c)
 
 
-add_library(lvgl STATIC ${LVGL_SOURCES}
+add_library(lvgl STATIC ${LVGL_SOURCES})
+
+# Add the standard include files to the build
+target_include_directories(main PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+
+        ${CMAKE_CURRENT_LIST_DIR}/HAL/rp2040_err/include
+        ${CMAKE_CURRENT_LIST_DIR}/HAL/dev_i2c/include
+        ${CMAKE_CURRENT_LIST_DIR}/HAL/dev_spi/include
+        
+        ${CMAKE_CURRENT_LIST_DIR}/lib/imu/include
+        ${CMAKE_CURRENT_LIST_DIR}/lib/rtc/include
+        ${CMAKE_CURRENT_LIST_DIR}/lib/display/include
+        
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl/src
+        
 )
+
+
 # Add any user requested libraries
-target_link_libraries(SmartWatch
+target_link_libraries(main
         hardware_gpio
         hardware_pwm
         hardware_spi
@@ -84,5 +95,5 @@ target_link_libraries(SmartWatch
         lvgl
         )
 
-pico_add_extra_outputs(SmartWatch)
+pico_add_extra_outputs(main)
 
